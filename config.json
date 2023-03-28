@@ -1,0 +1,16 @@
+{
+    "mongodb-host": "127.0.0.1",
+    "mongodb-port": 27017,
+    "mongodb-database": "db",
+    "mongodb-collection": "images",
+
+    "server-host": "0.0.0.0",
+    "server-port": 7680,
+
+    "device": "cpu",
+    "storage-type": "float32",
+
+    "clip-model": "ViT-B/32",
+    "clip-model-download": "./models",
+    "import-image-base": "./data"
+}
