@@ -143,7 +143,7 @@ def main():
         with gr.Accordion("Search options", open=False):
             extension_choice = gr.CheckboxGroup(["jpg", "png", "gif"], label="extension", info="choose extension for search")
             with gr.Row():
-                topn = gr.Number(value=64, label="topn")
+                topn = gr.Number(value=16, label="topn")
                 minimum_width = gr.Number(value=0, label="minimum_width")
                 minimun_height = gr.Number(value=0, label="minimum_height")
 
