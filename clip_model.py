@@ -20,9 +20,9 @@ class CLIPModel():
         
     def get_model(self):
         args = {}
-        if 'clip-model-download-root' in self.config:
-            args['download_root'] = self.config['clip-model-download-root']
-        return clip.load(self.config['clip-model'], device=self.device)
+        if 'clip-model-download' in self.config:
+            args['download_root'] = self.config['clip-model-download']
+        return clip.load(self.config['clip-model'], device=self.device, **args)
 
     def get_image_feature(self, image_path):
         try:
