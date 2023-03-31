@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-
-import torch
-import clip
+import time
+from functools import lru_cache
 
 from PIL import Image
+import torch
+import clip
 
 import utils
 
@@ -42,7 +43,16 @@ class CLIPModel():
         return feat.detach().cpu().numpy()
 
 
-if __name__ == "__main__":
+@lru_cache(maxsize=1)
+def get_model() -> CLIPModel:
     config = utils.get_config()
+    _time_start = time.time()
     model = CLIPModel(config)
+    _time_end = time.time()
+    print("[DEBUG] CLIP model loaded in {:.3f} seconds".format(_time_end - _time_start))
+    return model
+
+
+if __name__ == "__main__":
+    model = get_model()
     print(model.model)

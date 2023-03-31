@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import time
-import argparse
+import uuid
 from typing import List, Tuple
 
 import numpy as np
@@ -12,6 +12,7 @@ from PIL import Image
 
 import utils
 from clip_model import CLIPModel
+import import_images
 
 
 def cosine_similarity(query_feature, feature_list):
@@ -25,8 +26,7 @@ def cosine_similarity(query_feature, feature_list):
 
 def main():
     config = utils.get_config()
-    mongo_client = pymongo.MongoClient("mongodb://{}:{}/".format(config['mongodb-host'], config['mongodb-port']))
-    mongo_collection = mongo_client[config['mongodb-database']][config['mongodb-collection']]
+    mongo_collection = utils.get_mongo_collection()
     model = CLIPModel(config)
 
     def search_nearest_image_feature(
@@ -36,7 +36,7 @@ def main():
             minimum_height=0,
             extension_choice=[],
             mongo_collection=None):
-        
+
         assert isinstance(minimum_height, int) and isinstance(minimum_width, int)
         assert mongo_collection is not None
         # find all image filename and features
@@ -63,7 +63,6 @@ def main():
                 sim_score_list.append(cosine_similarity(query_feature, feature_list))
                 feature_list = []
 
-
         if len(feature_list) > 0:
             feature_list = np.array(feature_list)
             sim_score_list.append(cosine_similarity(query_feature, feature_list))
@@ -81,7 +80,6 @@ def main():
         return top_n_filename, top_n_score
 
 
-    # build gradio app
     def submit(prompt:str, topn:int,
                minimum_width:int, minimum_height:int,
                extension_choice) -> List[Tuple[Image.Image, str]]:
@@ -107,7 +105,6 @@ def main():
                                                                  mongo_collection=mongo_collection)
         ret_list = []
         if len(filename_list) == 0:
-            mongo_client.close()
             return ret_list
 
         doc_result = mongo_collection.find({"filename": {"$in": filename_list}}, {"_id": 0, "filename": 1, "width": 1, "height": 1, "filesize": 1, "date": 1})
@@ -130,15 +127,32 @@ def main():
 
         return ret_list
 
+
+    def upload(image:Image.Image) -> str:
+        temp_file_path = "/tmp/" + str(uuid.uuid4()) + ".png"
+        image.save(temp_file_path)
+
+        # TODO: resize image to a smaller size if needed
+        x = import_images.import_single_image(temp_file_path, mongo_collection, config)
+        os.remove(temp_file_path)
+        if x is None:
+            return "file not uploaded"
+        else:
+            return str(x)
+
+
+    # build gradio app
     with gr.Blocks() as demo:
         heading = gr.Markdown("# CLIP Image Search Demo")
         with gr.Row():
-            with gr.Column():
-                prompt_textbox = gr.Textbox(lines=4, label="Prompt")
-                button_prompt = gr.Button("Search").style(size="lg")
-            with gr.Column():
+            with gr.Column(scale=1):
+                prompt_textbox = gr.Textbox(lines=8, label="Prompt")
+                button_prompt = gr.Button("Search Text").style(size="lg")
+            with gr.Column(scale=2):
                 input_image = gr.Image(label="Image", type="pil")
-                button_image = gr.Button("Search").style(size="lg")
+                with gr.Row():
+                    button_image = gr.Button("Search Image").style(size="lg")
+                    button_upload = gr.Button("Upload Image").style(size="lg")
 
         with gr.Accordion("Search options", open=False):
             extension_choice = gr.CheckboxGroup(["jpg", "png", "gif"], label="extension", info="choose extension for search")
@@ -146,11 +160,14 @@ def main():
                 topn = gr.Number(value=16, label="topn")
                 minimum_width = gr.Number(value=0, label="minimum_width")
                 minimun_height = gr.Number(value=0, label="minimum_height")
+        with gr.Accordion("Debug output", open=False):
+            debug_output = gr.Textbox(lines=1)
 
         gallery = gr.Gallery(label="results").style(grid=4, height=6)
 
         button_prompt.click(submit, inputs=[prompt_textbox, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
         button_image.click(submit, inputs=[input_image, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
+        button_upload.click(upload, inputs=[input_image], outputs=[debug_output])
 
     demo.launch(server_name=config['server-host'], server_port=config['server-port'])
 

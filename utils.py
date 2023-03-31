@@ -3,9 +3,14 @@
 import os
 import json
 import hashlib
+from functools import lru_cache
 
+import pymongo
+from pymongo.collection import Collection
 import clip
 
+
+@lru_cache(maxsize=1)
 def get_config():
     with open('config.json') as json_data_file:
         c = json.load(json_data_file)
@@ -38,6 +43,14 @@ def get_file_type(image_path):
     if "PC bitmap" in libmagic_output:
         return "bmp"
     return None
+
+
+@lru_cache(maxsize=1)
+def get_mongo_collection() -> Collection:
+    config = get_config()
+    mongo_client = pymongo.MongoClient("mongodb://{}:{}/".format(config['mongodb-host'], config['mongodb-port']))
+    mongo_collection = mongo_client[config['mongodb-database']][config['mongodb-collection']]
+    return mongo_collection
 
 
 def calc_md5(filepath):
