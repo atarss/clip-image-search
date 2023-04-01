@@ -12,5 +12,10 @@
 
     "clip-model": "ViT-B/32",
     "clip-model-download": "./models",
-    "import-image-base": "./data"
+    "import-image-base": "./data",
+
+    "enable-ocr": false,
+    "ocr-det-model": "ch_PP-OCRv3_det_infer",
+    "ocr-rec-model": "ch_PP-OCRv3_rec_infer",
+    "ocr-model-download": "./models"
 }
