@@ -44,3 +44,12 @@ python3 server.py
 ### Search by image:
 
 ![](./resource/search_by_image.png)
+
+# TODO
+[ ] Test cases
+[ ] Support for OCR text, using PaddleOCR
+[ ] ElasticSearch for text search engine backend
+[ ] Change to a vector database backend: Faiss
+[ ] Import and search EXIF
+[ ] Multi-language support for OCR model
+[ ] Multi-language support for Text Search
