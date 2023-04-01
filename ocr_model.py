@@ -10,26 +10,18 @@ import utils
 
 def download_ocr_model(config):
     download_path = config["ocr-model-download"]
-    # check det
-    det_download_link_dict = {
+    download_link_dict = {
         "ch_PP-OCRv3_det_infer": "https://paddleocr.bj.bcebos.com/PP-OCRv3/chinese/ch_PP-OCRv3_det_infer.tar",
-    }
-    det_model = config["ocr-det-model"]
-    if not os.path.exists(os.path.join(download_path, det_model)):
-        print("Downloading det model")
-        os.system(f"wget {det_download_link_dict[det_model]} -P {download_path}")
-        os.system(f"tar -xf {os.path.join(download_path, det_model)}.tar -C {download_path}")
-        os.system(f"rm {os.path.join(download_path, det_model)}.tar")
-    # check rec
-    rec_download_link_dict = {
         "ch_PP-OCRv3_rec_infer": "https://paddleocr.bj.bcebos.com/PP-OCRv3/chinese/ch_PP-OCRv3_rec_infer.tar",
     }
+    det_model = config["ocr-det-model"]
     rec_model = config["ocr-rec-model"]
-    if not os.path.exists(os.path.join(download_path, rec_model)):
-        print("Downloading rec model")
-        os.system(f"wget {rec_download_link_dict[rec_model]} -P {download_path}")
-        os.system(f"tar -xf {os.path.join(download_path, rec_model)}.tar -C {download_path}")
-        os.system(f"rm {os.path.join(download_path, rec_model)}.tar")
+    for model_name in [det_model, rec_model]:
+        if not os.path.exists(os.path.join(download_path, model_name)):
+            print("Downloading det model")
+            os.system(f"wget {download_link_dict[model_name]} -P {download_path}")
+            os.system(f"tar -xf {os.path.join(download_path, model_name)}.tar -C {download_path}")
+            os.system(f"rm {os.path.join(download_path, model_name)}.tar")
 
 
 class OCRModel:
