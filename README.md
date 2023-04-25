@@ -1,6 +1,8 @@
 # clip-image-search
 A simple image search engine using CLIP feature.
 
+Also have a look at my blog post: [基于 CLIP 模型特征搭建简易的个人图像搜索引擎](https://andy9999678.me/blog/?p=239)
+
 # Pre-requisites
 We need python3, mongodb and [CLIP model library](https://github.com/openai/CLIP) to run this project.
 ## Python requirements 
